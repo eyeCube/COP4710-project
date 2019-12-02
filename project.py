@@ -172,6 +172,22 @@ def delete_where(cursor, condition):
 def delete_by_name(cursor, name):
     delete_where(cursor, "name = {}".format(name))
 
+def update_entry(cursor, job_id, **kwargs):
+    database = DATABASE_NAME
+    condition = "job_id = {}".format(job_id) # what's the column name?
+
+    # create the set field
+    setfield = ""
+    for k,v in kwargs.items():
+        setfield += "{} = {}, ".format(k, v)
+    setfield=setfield[:-2] # remove final ", "
+    
+    sql = "UPDATE {db} SET {kw} WHERE {con}".format(
+        db=database, kw=setfield, con=condition
+        )
+    cursor.execute(sql)
+    return cursor.fetchall()
+
 
 # main function -- testing
 def main():
