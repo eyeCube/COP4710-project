@@ -164,6 +164,14 @@ def _insert(cursor, statement):
 # end def
 
 
+def delete_where(cursor, condition):
+    database = DATABASE_NAME
+    sql = "DELETE FROM {db} WHERE {con}".format(database, condition)
+    cursor.execute(sql)
+    
+def delete_by_name(cursor, name):
+    delete_where(cursor, "name = {}".format(name))
+
 
 # main function -- testing
 def main():
