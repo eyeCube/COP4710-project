@@ -186,7 +186,10 @@ if __name__=="__main__":
     insert(None, "INSERT INTO jobs (par1, par2, par3, par4) VALUES (1, 2, 3, 4)")
     
 ##    main()
-    
+
+
+
+# EXAMPLES BELOW
 
 
 '''
@@ -202,7 +205,7 @@ cnx.close()
 '''
 
 
-
+'''
 insert_statement = ( # SQL statement
         "INSERT INTO jobs"
         "VALUES (%s, %s, %s, %s, %s, %s)"
@@ -217,4 +220,4 @@ insert_statement = ( # SQL statement
         )
     cursor.execute(insert_statement, data)
     records = cursor.fetchall() # fetch all rows from the query result
-    
+'''
