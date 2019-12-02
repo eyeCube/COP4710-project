@@ -179,6 +179,11 @@ def update_entry(cursor, job_id, **kwargs):
     # create the set field
     setfield = ""
     for k,v in kwargs.items():
+        # SQL uses 1 for true, 0 for false
+        if v is True:
+            v = 1
+        elif v is False:
+            v = 0
         setfield += "{} = {}, ".format(k, v)
     setfield=setfield[:-2] # remove final ", "
     
