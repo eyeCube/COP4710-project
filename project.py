@@ -187,6 +187,7 @@ def update_entry(cursor, job_id, **kwargs):
         )
     cursor.execute(sql)
     return cursor.fetchall()
+# end def
 
 
 # main function -- testing
