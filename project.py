@@ -1,7 +1,7 @@
 '''
     CDA 4710
     Databases project
-    Jacob Wharton, Andre Guiraud, Samuel Silva
+    Jacob Wharton, Andre ..., Sam ...
     Due: 6 December 2019
 '''
 
@@ -12,7 +12,12 @@
 import mysql.connector
 
 
+# constants
 DATABASE_NAME = "jobs"
+    # database column names
+JOB_ID = "job_id"
+JOB_NAME = "name"
+#
 
 
 # get connection, cursor objects
@@ -94,6 +99,37 @@ def insert_kwargs(cursor, **kwargs):
     return cursor.fetchall() # fetch all rows from the query result
 # end def
 
+def delete_where(cursor, condition):
+    sql = "DELETE FROM {db} WHERE {con}".format(
+        db=database, con=condition )
+    cursor.execute(sql)
+def delete(cursor, itemID): # delete by ID
+    delete_where(cursor, "{} = {}".format(JOB_ID, itemID))
+def delete_by_name(cursor, name):
+    delete_where(cursor, "{} = {}".format(JOB_NAME, name))
+
+def update_entry(cursor, job_id, **kwargs):
+    database = DATABASE_NAME
+    condition = "job_id = {}".format(job_id) # what's the column name?
+
+    # create the set field
+    setfield = ""
+    for k,v in kwargs.items():
+        # SQL uses 1 for true, 0 for false
+        if v is True:
+            v = 1
+        elif v is False:
+            v = 0
+        setfield += "{} = {}, ".format(k, v)
+    setfield=setfield[:-2] # remove final ", "
+    
+    sql = "UPDATE {db} SET {kw} WHERE {con}".format(
+        db=database, kw=setfield, con=condition
+        )
+    cursor.execute(sql)
+    return cursor.fetchall()
+# end def
+
 
 # end def
 # INSERT INTO TABLE (...) VALUES (...)
@@ -164,54 +200,12 @@ def _insert(cursor, statement):
 # end def
 
 
-def delete_where(cursor, condition):
-    database = DATABASE_NAME
-    sql = "DELETE FROM {db} WHERE {con}".format(database, condition)
-    cursor.execute(sql)
-    
-def delete_by_name(cursor, name):
-    delete_where(cursor, "name = {}".format(name))
-
-def update_entry(cursor, job_id, **kwargs):
-    database = DATABASE_NAME
-    condition = "job_id = {}".format(job_id) # what's the column name?
-
-    # create the set field
-    setfield = ""
-    for k,v in kwargs.items():
-        # SQL uses 1 for true, 0 for false
-        if v is True:
-            v = 1
-        elif v is False:
-            v = 0
-        setfield += "{} = {}, ".format(k, v)
-    setfield=setfield[:-2] # remove final ", "
-    
-    sql = "UPDATE {db} SET {kw} WHERE {con}".format(
-        db=database, kw=setfield, con=condition
-        )
-    cursor.execute(sql)
-    return cursor.fetchall()
-# end def
-
-
-# main function -- testing
-def main():
-    cnx, cursor = establish_connection(host, user, pw, database)
-    
-    
-    cnx.commit() # commit changes to the database
-    cursor.close() # finally, make sure we close stuff
-    cnx.close()
 
 if __name__=="__main__":
     insert(None, "INSERT INTO jobs (par1, par2, par3, par4) VALUES (1, 2, 3, 4)")
     
 ##    main()
-
-
-
-# EXAMPLES BELOW
+    
 
 
 '''
@@ -227,7 +221,7 @@ cnx.close()
 '''
 
 
-'''
+
 insert_statement = ( # SQL statement
         "INSERT INTO jobs"
         "VALUES (%s, %s, %s, %s, %s, %s)"
@@ -242,4 +236,4 @@ insert_statement = ( # SQL statement
         )
     cursor.execute(insert_statement, data)
     records = cursor.fetchall() # fetch all rows from the query result
-'''
+    
