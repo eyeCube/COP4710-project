@@ -13,11 +13,22 @@ import mysql.connector
 
 
 # constants
-DATABASE_NAME = "jobs"
+DATABASE_NAME = "Florida_OES"
     # database column names
-JOB_ID = "job_id"
-JOB_NAME = "name"
+JOB_ID = "OCC_CODE"
+JOB_NAME = "OCC_TITLE"
 #
+
+'''
+columns:
+    AREA        string
+    AREA_NAME   string
+    OCC_CODE    string -> occupation type
+    OCC_TITLE   string
+    H_MEAN      float
+    A_MEAN      int
+    A_MEDIAN    int
+'''
 
 
 # get connection, cursor objects
@@ -107,6 +118,9 @@ def delete(cursor, itemID): # delete by ID
     delete_where(cursor, "{} = {}".format(JOB_ID, itemID))
 def delete_by_name(cursor, name):
     delete_where(cursor, "{} = {}".format(JOB_NAME, name))
+
+def search_by_name():
+    pass
 
 def update_entry(cursor, job_id, **kwargs):
     database = DATABASE_NAME
@@ -199,12 +213,64 @@ def _insert(cursor, statement):
 ##    return records
 # end def
 
+def menu():
+    print("~~~~~~~~~~~~~~~~~~~~")
+    print("    Commands:")
+    print("        i : insert new item into database")
+    print("        d : delete item by ID")
+    print("        D : delete item satisfying condition")
+    print("        u : update")
+    print("        q : quit")
 
+def main(*args):
+    assert(len(args) > 4)
+
+    host = args[1]
+    user = args[2]
+    pw = args[3]
+    dbname = args[4] if len(args) >= 5 else DATABASE_NAME
+    cnx, cursor = establish_connection(host, user, pw, dbname)
+    
+    programIsRunning = True
+    while (programIsRunning):
+        menu()
+        opt=input()
+        if opt=='i':
+            inp=input()
+            if inp.find("=") != -1:
+                insert_kwargs(inp)
+            else:
+                insert_args(inp)
+            cnx.commit()
+        elif opt=='d':
+            print("Enter the OCC_CODE of the item to delete:")
+            inp=input()
+            delete(inp)
+            cnx.commit()
+        elif opt=='D':
+            print("Enter the condition on which to delete:")
+            inp=input()
+            delete_where(inp)
+            cnx.commit()
+        elif opt=='u':
+            print("Enter the ID of the item to update:")
+            item=input()
+            print("Enter the new data for the row:")
+            arglist=input()
+            update(item, arglist)
+            cnx.commit()
+        elif opt=='q':
+            programIsRunning=False
+    # end while
+    
+    cnx.commit()
+    cursor.close()
+    cnx.close()
+# end main
+            
 
 if __name__=="__main__":
-    insert(None, "INSERT INTO jobs (par1, par2, par3, par4) VALUES (1, 2, 3, 4)")
-    
-##    main()
+    main()
     
 
 
