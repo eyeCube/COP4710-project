@@ -19,16 +19,7 @@ JOB_ID = "OCC_CODE"
 JOB_NAME = "OCC_TITLE"
 #
 
-'''
-columns:
-    AREA        string
-    AREA_NAME   string
-    OCC_CODE    string -> occupation type
-    OCC_TITLE   string
-    H_MEAN      float
-    A_MEAN      int
-    A_MEDIAN    int
-'''
+
 
 
 # get connection, cursor objects
@@ -222,6 +213,18 @@ def menu():
     print("        u : update")
     print("        q : quit")
 
+def printColumns():
+    print('''
+Columns:
+    AREA        : string
+    AREA_NAME   : string
+    OCC_CODE    : string -> occupation type
+    OCC_TITLE   : string
+    H_MEAN      : float
+    A_MEAN      : int
+    A_MEDIAN    : int
+''')
+
 def main(*args):
     assert(len(args) > 4)
 
@@ -235,30 +238,45 @@ def main(*args):
     while (programIsRunning):
         menu()
         opt=input()
+        
         if opt=='i':
+            printColumns()
+            print("Enter the data for the new row, delimited by ', ':")
             inp=input()
-            if inp.find("=") != -1:
-                insert_kwargs(inp)
+            inps = inp.split(", ")
+            kwargs = False
+            for _in in inps:
+                if inp.find("=") != -1:
+                    kwargs = True
+                    break
+            if kwargs:
+                insert_kwargs(cursor, inps)
             else:
-                insert_args(inp)
+                insert_args(cursor, inps)
             cnx.commit()
+            
         elif opt=='d':
             print("Enter the OCC_CODE of the item to delete:")
             inp=input()
-            delete(inp)
+            delete(cursor, inp)
             cnx.commit()
+            
         elif opt=='D':
             print("Enter the condition on which to delete:")
             inp=input()
-            delete_where(inp)
+            delete_where(cursor, inp)
             cnx.commit()
+            
         elif opt=='u':
             print("Enter the ID of the item to update:")
             item=input()
-            print("Enter the new data for the row:")
-            arglist=input()
-            update(item, arglist)
+            printColumns()
+            print("Enter the new data for the row, delimited by ', ':")
+            argstr=input()
+            arglist = argstr.split(", ")
+            update(cursor, item, arglist)
             cnx.commit()
+            
         elif opt=='q':
             programIsRunning=False
     # end while
@@ -287,7 +305,7 @@ cnx.close()
 '''
 
 
-
+'''
 insert_statement = ( # SQL statement
         "INSERT INTO jobs"
         "VALUES (%s, %s, %s, %s, %s, %s)"
@@ -302,4 +320,4 @@ insert_statement = ( # SQL statement
         )
     cursor.execute(insert_statement, data)
     records = cursor.fetchall() # fetch all rows from the query result
-    
+    '''
