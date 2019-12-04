@@ -69,7 +69,7 @@ def choose_query_from_input(inp: str):
 
 def get_location_code(cursor, lname): #updated: test again
     sql = "SELECT l_code FROM location WHERE l_name = '{}'".format(
-        convert_location(lname) )
+        convert_location(cursor, lname) )
     cursor.execute(sql)
     results = cursor.fetchone()
     if len(results):
@@ -83,7 +83,7 @@ def get_location_codes(cursor):
     return cursor.fetchall()
 
 def get_occupation_code(cursor, o_name): # TEST
-    sql = "SELECT DISTINCT o_code FROM majors WHERE m_name LIKE '%{}%'".format(
+    sql = "SELECT DISTINCT m_id FROM major WHERE m_name LIKE '%{}%'".format(
         o_name )
     cursor.execute(sql)
     results = cursor.fetchone()
@@ -203,18 +203,18 @@ def update_entry(cursor, job_id, **kwargs):
 # end def
 
 def update_occupation(cursor, o_code, o_name):
-    sql = "UPDATE occupation SET o_name = '{}' WHERE o_code = {}".format(
+    sql = "UPDATE occupation SET o_name = '{}' WHERE o_code = '{}'".format(
         o_name, o_code
         )
     cursor.execute(sql)
 def update_salary(cursor, h_mean, a_mean, a_median, o_code, l_code):
-    sql = "UPDATE salary SET h_mean = {}, a_mean = {}, a_median = {} WHERE o_code = {} AND l_code = {}".format(
+    sql = "UPDATE salary SET h_mean = {}, a_mean = {}, a_median = {} WHERE o_code = '{}' AND l_code = {}".format(
         h_mean, a_mean, a_median, o_code, l_code
         )
     cursor.execute(sql)
 
 #add this little function to the definition
-def search():
+def search(cursor):
 
     print(" What do you want to base your search on?")
     print("~~~~~~~~~~~~~~~~~~~~")
@@ -254,7 +254,7 @@ def search():
 
     else :
         print("Invalid option")
-        return search()
+        return search(cursor)
 #end def search
 
 
@@ -274,15 +274,14 @@ def convert_location(cursor, loc):
         return None
 #get average hourly wage for all jobs of a given major in a given area
 def get_hourly_avg(cursor, majorName, locName):
-    o_code = get_occupation_code(cursor, majorName)[:2] # only care about first two digits in the code
+    m_code = get_occupation_code(cursor, majorName) # only care about first two digits in the code
+    m_code2 = (str)((int)(m_code) + 1)
     l_name = convert_location(cursor, locName) # get a valid location
-    if o_code == None:
+    if m_code == None:
         return None
     if l_name == None:
         return None
-    sql = '''SELECT AVG(h_mean) FROM jobs, location
-    WHERE jobs.o_code LIKE '{}%' AND location.l_name = '{}'
-    '''.format(o_code, l_name)
+    sql = "SELECT DISTINCT AVG(h_mean) FROM salary, major, location, occupation WHERE salary.o_code = occupation.o_code AND (salary.o_code >= '{}' AND salary.o_code <= '{}')".format(m_code, m_code2)
     cursor.execute(sql)
     return cursor.fetchall()
 # redundant ?
@@ -312,13 +311,13 @@ def menu():
 ##    print("        u : update")
     print("        us: update salary row")
     print("        uo: update occuptation row")
-    print("        s : select")
+    print("        s : search occupation name")
     print("        ss: search for a job by major or location")
     print("        o : get occupation code matching job title")
     print("        l : get location code matching location name")
-    print("        I : insert new item into database (each column)")
-    print("        D : delete item satisfying condition")
-    print("        S : select item satisfying condition")
+##    print("        I : insert new item into database (each column)")
+##    print("        D : delete item satisfying condition")
+##    print("        S : select item satisfying condition")
     print("        a : get hourly average")
     print("        q : quit")
 
@@ -357,6 +356,7 @@ def main():
             inp1=input()
             insert_occupation(cursor, inp, inp1)
             cnx.commit()
+            print("Occupation with o_name {} and o_code {} has been inserted.\n".format(inp1, inp))
         
         elif opt=='is':
             #h_mean, a_mean, a_median, o_code, l_code
@@ -372,7 +372,8 @@ def main():
             inp4=input()
             insert_salary(cursor, inp, inp1, inp2, inp3, inp4)
             cnx.commit()
-        
+            print("Salary has been inserted into database for occupation with code {}.\n".format(inp3))
+
         elif opt=='uo':
             print("Enter the o_code")
             inp=input()
@@ -380,6 +381,7 @@ def main():
             inp1=input()
             update_occupation(cursor, inp, inp1)
             cnx.commit()
+            print("Occupation with o_code {} has been renamed to {}.\n".format(inp, inp1))
         
         elif opt=='us':
             #h_mean, a_mean, a_median, o_code, l_code
@@ -395,67 +397,14 @@ def main():
             inp2=input()
             update_salary(cursor, inp, inp1, inp2, inp3, inp4)
             cnx.commit()
-        
-        elif opt=='i':
-            # get location
-            while(True):
-                print("Enter a valid location e.g. 'Tallahassee, FL':")
-                loc=input()
-                area_code = get_location_code(cursor, loc)
-                print(area_code)
-                if area_code != None:
-##                    for item in get_location_codes(cursor):
-##                        acode = item[0] # each row is a tuple
-##                        if acode==area_code:
-##                            break
-                    break
-                print("Invalid response. Try again.")
-            # end while
+            print("Salary data at location with l_code {} with o_code {} has been updated.\n".format(inp4, inp3))
 
-            # get occupation code
-            # how to handle this? How do we want insert to work?
-            while(True):
-                print("Enter a valid occupation code e.g. '11-1011':")
-                o_code=input()
-                
-                # is this how this should be??
-                print(o_code)
-                if o_code != None:
-##                    for item in get_occupation_codes():
-##                        ocode = item[0] # each row is a tuple
-##                        if ocode[:2]==o_code[:2]: # only care about first two numbers.
-##                            break
-                    break
-                print("Invalid response. Try again.")
-            # end while
-            
-            print("Enter the occupation title:")
-            o_title = input()
-            print("Enter the occupation hourly mean:")
-            h_mean = input()
-            print("Enter the occupation annual mean:")
-            a_mean = input()
-            print("Enter the occupation annul median:")
-            a_median = input()
-            
-            insert_args(cursor, (a_code, o_code, o_title, h_mean, a_mean, a_median,
-                )
-            )
-            cnx.commit()
-        # end if
-            
-        elif opt=='I':
-            print("Enter the new row data, delimited by ', ':")
-            inp=input()
-            inps = inp.split(", ")
-            insert_args(cursor, inps)
-            cnx.commit()
-            
         elif opt=='d':
             print("Enter the o_code of the item to delete:")
             inp=input()
             delete(cursor, inp)
             cnx.commit()
+            print("Occupation with o_code {} has been deleted.\n".format(inp))
 	
         elif opt=='ds':
             print("Enter the o_code of the salary to delete:")
@@ -464,23 +413,8 @@ def main():
             inp1=input()
             delete_salary(cursor, "o_code = '{}' AND l_code = '{}'".format(
                 inp, inp1) )
-            cnx.commit() #
-            
-        elif opt=='D':
-            print("Enter the condition on which to delete:")
-            inp=input()
-            delete_where(cursor, inp)
-            cnx.commit()
-            
-        elif opt=='u': # TODO: update update fxn
-            print("Enter the o_code of the item to update:")
-            item=input()
-            printColumns()
-            print("Enter the new data for the row, delimited by ', ':")
-            argstr=input()
-            arglist = argstr.split(", ")
-            update_entry(cursor, item, arglist)
-            cnx.commit()
+            cnx.commit() 
+            print("Salary data for o_code {} at location with code {} has been deleted.\n".format(inp, inp1))
 
         # select by name
         elif opt=='s':
@@ -488,10 +422,12 @@ def main():
             inp=input()
             results = select_by_name(cursor, inp)
             print(results)
+            print("")
 
         # search by major / area
         elif opt=='ss':
-            print(search())
+            print(search(cursor))
+            print("")
 
         # search avg
         elif opt=='a':
@@ -502,15 +438,9 @@ def main():
             results = get_hourly_avg(cursor, inp, inp1)
             if results:
                 print(results)
+                print("")
             else:
-                print("No results.")
-        
-        # search by condition
-        elif opt=='S':
-            print("Enter the condition on which to search:")
-            inp=input()
-            results = select(cursor, inp)
-            print(results)
+                print("No results.\n")
 
         # get occupation code from occupation name
         elif opt=='o':
@@ -518,12 +448,14 @@ def main():
            inp=input()
            results = select_o_code(cursor, inp)
            print(results)
+           print("")
     
         elif opt=='l':
            print("Enter a valid location e.g. 'Tallahassee, FL':")
            loc=input()
            area_code = get_location_code(cursor, loc)
            print(area_code)
+           print("")
             
         elif opt=='q':
             programIsRunning=False
