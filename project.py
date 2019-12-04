@@ -279,6 +279,7 @@ def get_rows_from_major_location(cursor, major, area_code):
 
 
 def menu():
+    print("Enter a command to begin.")
     print("~~~~~~~~~~~~~~~~~~~~")
     print("    Commands:")
     print("        i : insert new item into database")
@@ -286,12 +287,13 @@ def menu():
     print("        ds: delete salary by ID and loc") 
     print("        u : update")
     print("        s : select")
+    print("        ss: search for a job by major or location")
     print("        o : get occupation code matching job title")
     print("        l : get location code matching location name")
     print("        I : insert new item into database (each column)")
     print("        D : delete item satisfying condition")
-    print("        ss: search for a job by major or location")
     print("        S : select item satisfying condition")
+    print("        a : get hourly average")
     print("        q : quit")
 
 def printColumns():
@@ -390,6 +392,7 @@ def main():
 	    inp1=input()
 	    delete_salary(cursor, "o_code = '{}' AND l_code = '{}'".format(
                 inp, inp1) )
+	    cnx.commit()
             
         elif opt=='D':
             print("Enter the condition on which to delete:")
@@ -417,6 +420,18 @@ def main():
         # search by major / area
         elif opt=='ss':
             print(search())
+
+        # search avg
+        elif opt=='a':
+            print("Enter the major name:")
+            inp=input()
+            print("Enter the location name:")
+            inp1=input()
+            results = get_hourly_avg(cursor, inp, inp1)
+            if results:
+                print(results)
+            else:
+                print("No results."
 
         # search by condition
         elif opt=='S':
