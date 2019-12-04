@@ -102,6 +102,7 @@ def get_occupation_codes(cursor):
     cursor.execute(sql)
     return cursor.fetchall()
 
+
 def insert_args(cursor, *args):
     '''        
         add a record to the database, using standard arguments
@@ -162,7 +163,8 @@ def select(cursor, condition):
     cursor.execute(sql)
     return cursor.fetchall()
 def select_by_name(cursor, name):
-    return select(cursor, "{} = '{}'".format(JOB_NAME, name))
+##    "{} = '{}'"
+    return select(cursor, "{} LIKE '%{}%'".format(JOB_NAME, name))
 
 def update_entry(cursor, job_id, **kwargs):
     print("update")
@@ -185,7 +187,6 @@ def update_entry(cursor, job_id, **kwargs):
         db=database, kw=setfield, con=condition
         )
     cursor.execute(sql)
-    return cursor.fetchall()
 # end def
 
 
@@ -194,14 +195,17 @@ def menu():
     print("    Commands:")
     print("        i : insert new item into database")
     print("        d : delete item by ID")
-    print("        D : delete item satisfying condition")
     print("        u : update")
     print("        s : select")
-    print("        S : select item satisfying condition")
     print("        q : quit")
+    print("        o : get occupation code matching job title")
+    print("        I : insert new item into database (each column)")
+    print("        D : delete item satisfying condition")
+    print("        S : select item satisfying condition")
 
 def printColumns():
-    print('''
+    # TODO: change these to the appropriate names
+    print(''' 
 Columns:
     AREA        : string
     AREA_NAME   : string
@@ -272,8 +276,15 @@ def main():
             cnx.commit()
         # end if
             
+        elif opt=='I':
+            print("Enter the new row data, delimited by ', ':")
+            inp=input()
+            inps = inp.split(", ")
+            insert_args(cursor, inps)
+            cnx.commit()
+            
         elif opt=='d':
-            print("Enter the OCC_CODE of the item to delete:")
+            print("Enter the o_code of the item to delete:")
             inp=input()
             delete(cursor, inp)
             cnx.commit()
@@ -284,8 +295,8 @@ def main():
             delete_where(cursor, inp)
             cnx.commit()
             
-        elif opt=='u':
-            print("Enter the ID of the item to update:")
+        elif opt=='u': # TODO: update update fxn
+            print("Enter the o_code of the item to update:")
             item=input()
             printColumns()
             print("Enter the new data for the row, delimited by ', ':")
