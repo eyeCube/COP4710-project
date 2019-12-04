@@ -86,8 +86,9 @@ def get_rows_from_major_location(cursor, major, area_code):
     return cursor.fetchall()
 #
 
-def get_location_code(cursor, lname):
-    sql = "SELECT l_code FROM location WHERE l_name = '{}'".format(lname)
+def get_location_code(cursor, lname): #updated: test again
+    sql = "SELECT l_code FROM location WHERE l_name = '{}'".format(
+        convert_location(lname) )
     cursor.execute(sql)
     return cursor.fetchone()[0] #return only the first item in the row
 
