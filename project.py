@@ -5,7 +5,8 @@
     Due: 6 December 2019
 
     more fxns:
-    get location code for a given 
+    get location code for a given location name
+    
     
     advanced fxn:
     location radius of search major -> info about jobs relating to major
@@ -29,6 +30,16 @@ JOB_NAME = "o_name"
 
 def get_location_code(cursor, lname)
     sql = "SELECT l_code FROM location WHERE l_name = '{}'".format(lname)
+    cursor.execute(sql)
+    return cursor.fetchone()[0]
+
+def get_location_codes(cursor):
+    sql = "SELECT DISTINCT l_code FROM location"
+    cursor.execute(sql)
+    return cursor.fetchall()
+
+def get_occupation_codes(cursor):
+    sql = "SELECT DISTINCT o_code FROM jobs"
     cursor.execute(sql)
     return cursor.fetchall()
 
@@ -87,7 +98,6 @@ def insert_args(cursor, *args):
         db=DATABASE_NAME, v=valuestrs
         )
     cursor.execute(statement, tuple(_values))
-    return cursor.fetchall() # fetch all rows from the query result
         
 def insert_kwargs(cursor, **kwargs):
     '''
@@ -111,7 +121,6 @@ def insert_kwargs(cursor, **kwargs):
         db=DATABASE_NAME, p=params, v=valuestrs
         )
     cursor.execute(statement, tuple(_values))
-    return cursor.fetchall() # fetch all rows from the query result
 # end def
 
 def delete_where(cursor, condition):
@@ -198,19 +207,47 @@ def main():
         
         if opt=='i':
             printColumns()
-            print("Enter the data for the new row, delimited by ', ':")
-            inp=input()
-            inps = inp.split(", ")
-            kwargs = False
-            for _in in inps:
-                if inp.find("=") != -1:
-                    kwargs = True
-                    break
-            if kwargs:
-                insert_kwargs(cursor, inps)
-            else:
-                insert_args(cursor, inps)
-            cnx.commit()
+            
+            # get location
+            while(True):
+                print("Enter a valid location e.g. 'Tallahassee, FL':")
+                loc=input()
+                area_code = get_location_code(loc)
+                print(area_code)
+                for item in get_location_codes():
+                    acode = item[0] # each row is a tuple
+                    if acode==area_code:
+                        break
+                print("Invalid response. Try again.")
+            # end while
+
+            # get occupation code
+            # how to handle this? How do we want insert to work?
+            while(True):
+                print("Enter a valid occupation code e.g. '11-1011':")
+                o_code=input()
+                print(o_code)
+                if item in get_occupation_codes():
+                    ocode = item[0] # each row is a tuple
+                    if ocode==o_code:
+                        break
+                print("Invalid response. Try again.")
+            # end while
+
+            print("Enter the occupation title:")
+            o_title = input()
+            print("Enter the occupation h_mean:")
+            h_mean = input()
+            print("Enter the occupation a_mean:")
+            a_mean = input()
+            print("Enter the occupation a_median:")
+            a_median = input()
+            
+            insert_args(cursor, (
+                area_code, area_name, o_code, o_title, h_mean, a_mean, a_median,
+                )
+            )
+        # end if
             
         elif opt=='d':
             print("Enter the OCC_CODE of the item to delete:")
