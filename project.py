@@ -354,7 +354,7 @@ def main():
             inp1=input()
             print("Enter the annual median")
             inp2=input()
-            print("Enter the occupatioon code")
+            print("Enter the occupation code")
             inp3=input()
             print("Enter the location code")
             inp4=input()
@@ -422,14 +422,14 @@ def main():
             delete(cursor, inp)
             cnx.commit()
 	
-	elif opt=='ds':
-	    print("Enter the o_code of the salary to delete:")
-	    inp=input()
-	    print("Enter the l_code of the salary to delete:")
-	    inp1=input()
-	    delete_salary(cursor, "o_code = '{}' AND l_code = '{}'".format(
+        elif opt=='ds':
+            print("Enter the o_code of the salary to delete:")
+            inp=input()
+            print("Enter the l_code of the salary to delete:")
+            inp1=input()
+            delete_salary(cursor, "o_code = '{}' AND l_code = '{}'".format(
                 inp, inp1) )
-	    cnx.commit()
+            cnx.commit()
             
         elif opt=='D':
             print("Enter the condition on which to delete:")
