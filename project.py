@@ -204,30 +204,30 @@ def search():
     option=input()
     if option == 'm':
         print("Enter your major's name")
-        m = input() # ** shouldn't these be h_mean, a_mean, a_median?
-        query = ("SELECT m_name, l_name, mean_wage, annual_wage, median_wage FROM expected_salary, major, location"
+        m = input()
+        query = ("SELECT m_name, l_name, h_mean, a_mean, a_median FROM expected_salary, major, location"
                          "WHERE m_name == %s")
 
-        cursor.execute(query, (m))
+        cursor.execute(query, (m,))
         return cursor.fetchall()
 
     elif option == 'a':
         print("Enter your state's name")
-        a = input() # ** shouldn't these be h_mean, a_mean, a_median?
-        query = ("SELECT m_name, l_name, mean_wage, annual_wage, median_wage FROM expected_salary, major, location"
+        a = input() 
+        query = ("SELECT m_name, l_name, h_mean, a_mean, a_median FROM expected_salary, major, location"
                          "WHERE l_name == %s")
 
-        cursor.execute(query, (a))
+        cursor.execute(query, (a,))
         return cursor.fetchall()
     elif option == 'i':
         print("Enter your major's name")
         m = input()
         print("Enter your area's name")
-        a = input() # ** shouldn't these be h_mean, a_mean, a_median?
-        query = ("SELECT m_name, l_name, mean_wage, annual_wage, median_wage FROM expected_salary, major, location"
+        a = input()
+        query = ("SELECT m_name, l_name, h_mean, a_mean, a_median FROM expected_salary, major, location"
                          "WHERE m_name == %s AND l_name == %s")
 
-        cursor.execute(query, (m,a))
+        cursor.execute(query, (m,a,))
         return cursor.fetchall()
 
     else :
