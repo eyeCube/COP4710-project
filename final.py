@@ -209,7 +209,7 @@ def update_occupation(cursor, o_code, o_name):
         )
     cursor.execute(sql)
 def update_salary(cursor, h_mean, a_mean, a_median, o_code, l_code):
-    sql = "UPDATE salary SET h_mean = {}, a_mean = {}, a_median = {} WHERE o_code = '{}' AND l_code = {}".format(
+    sql = "UPDATE salary SET h_mean = {}, a_mean = {}, a_median = {} WHERE o_code = '{}' AND l_code = '{}'".format(
         h_mean, a_mean, a_median, o_code, l_code
         )
     cursor.execute(sql)
@@ -228,29 +228,26 @@ def search(cursor):
     if option == 'm':
         print("Enter your major's name")
         m = input()
-        query = ("SELECT m_name, l_name, h_mean, a_mean, a_median FROM expected_salary, major, location"
-                         "WHERE m_name == %s")
+        query = ("SELECT DISTINCT m_name, o_name, h_mean, a_mean, a_median FROM salary, major, occupation WHERE m_name LIKE '%{}%' AND occupation.o_code = salary.o_code AND occupation.o_code >= m_id AND occupation.o_code < (m_id + 1)".format(m))
 
-        cursor.execute(query, (m,))
+        cursor.execute(query)
         return cursor.fetchall()
 
     elif option == 'a':
         print("Enter your state's name")
         a = input() 
-        query = ("SELECT m_name, l_name, h_mean, a_mean, a_median FROM expected_salary, major, location"
-                         "WHERE l_name == %s")
+        query = ("SELECT DISTINCT m_name, o_name, h_mean, a_mean, a_median FROM salary, major, location, occupation WHERE l_name LIKE '%{}%' AND occupation.o_code = salary.o_code AND occupation.o_code >= m_id AND occupation.o_code < (m_id + 1)".format(a))
 
-        cursor.execute(query, (a,))
+        cursor.execute(query)
         return cursor.fetchall()
     elif option == 'i':
         print("Enter your major's name")
         m = input()
         print("Enter your area's name")
         a = input()
-        query = ("SELECT m_name, l_name, h_mean, a_mean, a_median FROM expected_salary, major, location"
-                         "WHERE m_name == %s AND l_name == %s")
+        query = ("SELECT DISTINCT m_name, o_name, h_mean, a_mean, a_median FROM salary, major, occupation WHERE m_name LIKE '%{}%' AND l_name LIKE '%{}%' AND occupation.o_code = salary.o_code AND occupation.o_code >= m_id AND occupation.o_code < (m_id + 1)".format(m, a))
 
-        cursor.execute(query, (m,a,))
+        cursor.execute(query)
         return cursor.fetchall()
 
     else :
@@ -301,10 +298,10 @@ def get_rows_from_major_location(cursor, major, area_code):
 def top5(cursor):
     print ("What's your location?")
     loc = input()
-    query = ("SELECT DISTINCT o_name, h_mean, a_mean, a_median FROM salary, major, location, ocupation " 
-            "WHERE l_name LIKE '%s%' AND occupation.o_code = salary.o_code AND occupation.o_code => m_code AND occupation.o_code < (m_id + 1) ORDER BY h_mean DESC LIMIT 5"
+    query = ("SELECT DISTINCT o_name, h_mean, a_mean, a_median FROM salary, major, location, occupation " 
+            "WHERE l_name LIKE '%s%' AND occupation.o_code = salary.o_code AND occupation.o_code >= m_id AND occupation.o_code < (m_id + 1) ORDER BY h_mean DESC LIMIT 5"
         )
-    cursor.execute(query, (m,a))
+    cursor.execute(query, loc)
     return cursor.fetchall()
 
 
@@ -330,6 +327,7 @@ def menu():
 ##    print("        D : delete item satisfying condition")
 ##    print("        S : select item satisfying condition")
     print("        a : get hourly average")
+    print("        t : Top 5 jobs by location")
     print("        q : quit")
 
 def printColumns():
@@ -442,7 +440,7 @@ def main():
         # search by major / area
         elif opt=='ss':
             records = search(cursor)
-            x = prettytable.PrettyTable(["Major name", "Location name", "Hourly mean", "Annual wage", "Annual median"])
+            x = prettytable.PrettyTable(["Major name", "Occupation name", "Hourly mean", "Annual wage", "Annual median"])
             for row in records:
                 x.add_row( [ row[0], row[1], row[2], row[3], row[4] ] )
             print(x)
@@ -485,6 +483,7 @@ def main():
             for row in records:
                 x.add_row( [ row[0], row[1], row[2], row[3]] )
             print(x)
+            print("")
                 
         elif opt=='q':
             programIsRunning=False
@@ -498,6 +497,3 @@ def main():
 
 if __name__=="__main__":
     main()
-
-
-    
