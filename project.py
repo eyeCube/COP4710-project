@@ -118,16 +118,15 @@ def insert_args(cursor, *args):
 # end def
 
 def insert_occupation(cursor, o_code, o_name):
-    sql = "INSERT INTO occupation (o_code, o_name) VALUES ('{o_code}', '{o_name}')".format(
+    sql = "INSERT INTO occupation (o_code, o_name) VALUES ('{}', '{}')".format(
         o_code, o_name
         )
-    cursor.executs(sql)
+    cursor.execute(sql)
 def insert_salary(cursor, h_mean, a_mean, a_median, o_code, l_code):
-    sql = '''INSERT INTO occupation (h_mean, a_mean, a_median, o_code, l_code)
-VALUES ({h_mean}, {a_mean}, {a_median}, '{o_code}', {l_code}'''.format(
+    sql = "INSERT INTO salary (h_mean, a_mean, a_median, o_code, l_code) VALUES ({}, {}, {}, '{}', {}".format(
         h_mean, a_mean, a_median, o_code, l_code
         )
-    cursor.executs(sql)
+    cursor.execute(sql)
 
 def insert_kwargs(cursor, **kwargs):
     '''
@@ -346,7 +345,7 @@ def main():
             insert_occupation(cursor, inp, inp1)
             cnx.commit()
         
-        if opt=='is':
+        elif opt=='is':
             #h_mean, a_mean, a_median, o_code, l_code
             print("Enter the hourly mean")
             inp=input()
@@ -468,8 +467,8 @@ def main():
             if results:
                 print(results)
             else:
-                print("No results."
-
+                print("No results.")
+        
         # search by condition
         elif opt=='S':
             print("Enter the condition on which to search:")
@@ -478,15 +477,15 @@ def main():
             print(results)
 
         # get occupation code from occupation name
-	elif opt=='o':
+        elif opt=='o':
            print("Enter the name of occupation:")
            inp=input()
            results = select_o_code(cursor, inp)
            print(results)
-
-	elif opt=='l':
-	   print("Enter a valid location e.g. 'Tallahassee, FL':")
-	   loc=input()
+    
+        elif opt=='l':
+           print("Enter a valid location e.g. 'Tallahassee, FL':")
+           loc=input()
            area_code = get_location_code(cursor, loc)
            print(area_code)
             
