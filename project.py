@@ -10,6 +10,7 @@
 #   pip install -U wheel
 #   pip install mysql-connector-python-rf
 import mysql.connector
+import sys
 
 
 # constants
@@ -64,6 +65,7 @@ def insert_args(cursor, *args):
         add a record to the database, using standard arguments
             i.e. insert(cursor, "john", 12039,...)
     '''
+    print("insert_args")
     valuestrs = []
     _values = []
     for arg in args:
@@ -82,6 +84,7 @@ def insert_kwargs(cursor, **kwargs):
         add a record to the database, using keyword arguments
             i.e. insert(cursor, name="john", emp_id=12039,...)
     '''
+    print("insert_kwargs")
     params = []
     valuestrs = []
     _values = []
@@ -106,6 +109,7 @@ def delete_where(cursor, condition):
         db=database, con=condition )
     cursor.execute(sql)
 def delete(cursor, itemID): # delete by ID
+    print("delete")
     delete_where(cursor, "{} = {}".format(JOB_ID, itemID))
 def delete_by_name(cursor, name):
     delete_where(cursor, "{} = {}".format(JOB_NAME, name))
@@ -114,6 +118,8 @@ def search_by_name():
     pass
 
 def update_entry(cursor, job_id, **kwargs):
+    print("update")
+    
     database = DATABASE_NAME
     condition = "job_id = {}".format(job_id) # what's the column name?
 
@@ -136,74 +142,6 @@ def update_entry(cursor, job_id, **kwargs):
 # end def
 
 
-# end def
-# INSERT INTO TABLE (...) VALUES (...)
-def _insert(cursor, statement):
-    values_index = statement.find("VALUES (")
-    paren_index = statement.find("(")
-
-    # parameters given
-    # (two tuples provided in SQL string)
-    if paren_index < values_index:
-        
-        # parameters
-        endparen_index = statement.find(")")
-        params = statement[paren_index+1 : endparen_index]
-        params = params.split(", ")
-        # confirm that all parameters == column names in database
-        #...
-        # get parameters as an SQL string again
-        paramstr = "("
-        for param in params:
-            paramstr += param + ", "
-        paramstr = "{})".format(paramstr[:-2])
-        
-        # sql statement
-        sql1 = statement[:paren_index-1]
-        sql2 = statement[endparen_index+2 : values_index+6]
-        
-        # statement
-        statement = "{} {} {}".format(sql1, paramstr, sql2)
-        
-        # data
-        endparen_index = statement.find(")", endparen_index + 1)
-        datastr = statement[values_index+8 : endparen_index]
-        data = datastr.split(", ")
-        
-        print(statement)
-        print(sql1)
-        print(params)
-        print(paramstr)
-        print(sql2)
-        print(data)
-    
-    # no parameters given
-    # (only one tuple provided in SQL string)
-    else:
-        
-        # parameters
-        params = cursor.column_names
-    
-        # sql statement
-        sql = statement[:values_index+6]
-        
-        # data
-        endparen_index = statement.find(")")
-        datastr = statement[values_index+8 : endparen_index]
-        data = datastr.split(", ")
-        
-##        statement = ...
-        
-        print(params)
-        print(sql)
-        print(data)
-
-    # TODO: test with database
-##    cursor.execute(statement, data)
-##    records = cursor.fetchall() # fetch all rows from the query result
-##    return records
-# end def
-
 def menu():
     print("~~~~~~~~~~~~~~~~~~~~")
     print("    Commands:")
@@ -225,13 +163,14 @@ Columns:
     A_MEDIAN    : int
 ''')
 
-def main(*args):
-    assert(len(args) > 4)
+def main():
+    print(len(sys.argv))
+    assert(len(sys.argv) >= 3)
 
-    host = args[1]
-    user = args[2]
-    pw = args[3]
-    dbname = args[4] if len(args) >= 5 else DATABASE_NAME
+    host = sys.argv[1]
+    user = sys.argv[2]
+    pw = sys.argv[3]
+    dbname = sys.argv[4] if len(sys.argv) >= 5 else DATABASE_NAME
     cnx, cursor = establish_connection(host, user, pw, dbname)
     
     programIsRunning = True
@@ -321,3 +260,74 @@ insert_statement = ( # SQL statement
     cursor.execute(insert_statement, data)
     records = cursor.fetchall() # fetch all rows from the query result
     '''
+
+'''
+
+# end def
+# INSERT INTO TABLE (...) VALUES (...)
+def _insert(cursor, statement):
+    values_index = statement.find("VALUES (")
+    paren_index = statement.find("(")
+
+    # parameters given
+    # (two tuples provided in SQL string)
+    if paren_index < values_index:
+        
+        # parameters
+        endparen_index = statement.find(")")
+        params = statement[paren_index+1 : endparen_index]
+        params = params.split(", ")
+        # confirm that all parameters == column names in database
+        #...
+        # get parameters as an SQL string again
+        paramstr = "("
+        for param in params:
+            paramstr += param + ", "
+        paramstr = "{})".format(paramstr[:-2])
+        
+        # sql statement
+        sql1 = statement[:paren_index-1]
+        sql2 = statement[endparen_index+2 : values_index+6]
+        
+        # statement
+        statement = "{} {} {}".format(sql1, paramstr, sql2)
+        
+        # data
+        endparen_index = statement.find(")", endparen_index + 1)
+        datastr = statement[values_index+8 : endparen_index]
+        data = datastr.split(", ")
+        
+        print(statement)
+        print(sql1)
+        print(params)
+        print(paramstr)
+        print(sql2)
+        print(data)
+    
+    # no parameters given
+    # (only one tuple provided in SQL string)
+    else:
+        
+        # parameters
+        params = cursor.column_names
+    
+        # sql statement
+        sql = statement[:values_index+6]
+        
+        # data
+        endparen_index = statement.find(")")
+        datastr = statement[values_index+8 : endparen_index]
+        data = datastr.split(", ")
+        
+##        statement = ...
+        
+        print(params)
+        print(sql)
+        print(data)
+
+    # TODO: test with database
+##    cursor.execute(statement, data)
+##    records = cursor.fetchall() # fetch all rows from the query result
+##    return records
+# end def
+'''
