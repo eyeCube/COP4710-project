@@ -3,6 +3,12 @@
     Databases project
     Jacob Wharton, Andre Guiraud, Samuel Silva
     Due: 6 December 2019
+
+    more fxns:
+    get location code for a given 
+    
+    advanced fxn:
+    location radius of search major -> info about jobs relating to major
 '''
 
 # mysql connector:
@@ -21,6 +27,10 @@ JOB_NAME = "o_name"
 #
 
 
+def get_location_code(cursor, lname)
+    sql = "SELECT l_code FROM location WHERE l_name = '{}'".format(lname)
+    cursor.execute(sql)
+    return cursor.fetchall()
 
 
 # get connection, cursor objects
@@ -105,8 +115,9 @@ def insert_kwargs(cursor, **kwargs):
 # end def
 
 def delete_where(cursor, condition):
-    sql = "DELETE FROM {db} WHERE {con}".format(
-        db="occupation", con=condition )
+    sql = "DELETE FROM {db} WHERE {con}".format(db="salary", con=condition)
+    cursor.execute(sql)
+    sql = "DELETE FROM {db} WHERE {con}".format(db="occupation", con=condition)
     cursor.execute(sql)
 def delete(cursor, itemID): # delete by ID
     print("delete")
