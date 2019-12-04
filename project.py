@@ -14,7 +14,7 @@ import sys
 
 
 # constants
-DATABASE_NAME = "Florida_OES"
+DATABASE_NAME = "jobs"
     # database column names
 JOB_ID = "OCC_CODE"
 JOB_NAME = "OCC_TITLE"
@@ -106,13 +106,13 @@ def insert_kwargs(cursor, **kwargs):
 
 def delete_where(cursor, condition):
     sql = "DELETE FROM {db} WHERE {con}".format(
-        db=database, con=condition )
+        db=DATABASE_NAME, con=condition )
     cursor.execute(sql)
 def delete(cursor, itemID): # delete by ID
     print("delete")
-    delete_where(cursor, "{} = {}".format(JOB_ID, itemID))
+    delete_where(cursor, "{} = '{}'".format(JOB_ID, itemID))
 def delete_by_name(cursor, name):
-    delete_where(cursor, "{} = {}".format(JOB_NAME, name))
+    delete_where(cursor, "{} = '{}'".format(JOB_NAME, name))
 
 def search_by_name():
     pass
