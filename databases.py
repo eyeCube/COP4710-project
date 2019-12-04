@@ -148,6 +148,9 @@ def delete_where(cursor, condition):
     cursor.execute(sql)
     sql = "DELETE FROM {db} WHERE {con}".format(db="occupation", con=condition)
     cursor.execute(sql)
+def delete_salary(cursor, condition):
+    sql = "DELETE FROM {db} WHERE {con}".format(db="salary", con=condition)
+    cursor.execute(sql)
 def delete(cursor, itemID): # delete by ID
     print("delete")
     delete_where(cursor, "{} = '{}'".format(JOB_ID, itemID))
@@ -193,10 +196,12 @@ def menu():
     print("~~~~~~~~~~~~~~~~~~~~")
     print("    Commands:")
     print("        i : insert new item into database")
-    print("        d : delete item by ID")
+    print("        d : delete occupation by ID")
+    print("        ds: delete salary by ID and loc") 
     print("        u : update")
     print("        s : select")
     print("        o : get occupation code matching job title")
+    print("        l : get location code matching location name")
     print("        I : insert new item into database (each column)")
     print("        D : delete item satisfying condition")
     print("        S : select item satisfying condition")
@@ -286,6 +291,13 @@ def main():
             inp=input()
             delete(cursor, inp)
             cnx.commit()
+	
+	elif opt=='ds':
+	    print("Enter the o_code of the salary to delete:")
+	    inp=input()
+	    print("Enter the l_code of the salary to delete:")
+	    inp1=input()
+	    delete_salary(cursor, "o_code = '{}' AND l_code = '{}'".format(inp, inp1))
             
         elif opt=='D':
             print("Enter the condition on which to delete:")
@@ -314,6 +326,12 @@ def main():
            inp=input()
            results = select_o_code(cursor, inp)
            print(results)
+
+	elif opt=='l':
+	   print("Enter a valid location e.g. 'Tallahassee, FL':")
+	   loc=input()
+           area_code = get_location_code(cursor, loc)
+           print(area_code)
 
         elif opt=='S':
             print("Enter the condition on which to search:")
