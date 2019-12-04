@@ -1,5 +1,5 @@
 '''
-    CDA 4710
+    CDA4710
     Databases project
     Jacob Wharton, Andre Guiraud, Samuel Silva
     Due: 6 December 2019
