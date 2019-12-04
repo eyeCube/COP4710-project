@@ -155,6 +155,7 @@ def menu():
     print("        D : delete item satisfying condition")
     print("        u : update")
     print("        s : select")
+    print("        S : select item satisfying condition")
     print("        q : quit")
 
 def printColumns():
@@ -226,6 +227,12 @@ def main():
             print("Enter the name of the occupation to search for:")
             inp=input()
             results = select_by_name(cursor, inp)
+            print(results)
+            
+        elif opt=='S':
+            print("Enter the condition on which to search:")
+            inp=input()
+            results = select(cursor, inp)
             print(results)
             
         elif opt=='q':
