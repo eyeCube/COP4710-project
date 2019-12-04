@@ -123,7 +123,7 @@ def insert_occupation(cursor, o_code, o_name):
         )
     cursor.execute(sql)
 def insert_salary(cursor, h_mean, a_mean, a_median, o_code, l_code):
-    sql = "INSERT INTO salary (h_mean, a_mean, a_median, o_code, l_code) VALUES ({}, {}, {}, '{}', {}".format(
+    sql = "INSERT INTO salary (h_mean, a_mean, a_median, o_code, l_code) VALUES ({}, {}, {}, '{}', {})".format(
         h_mean, a_mean, a_median, o_code, l_code
         )
     cursor.execute(sql)
@@ -182,8 +182,8 @@ def select_o_code(cursor, name):
 def update_entry(cursor, job_id, **kwargs):
     print("update")
     
-    database = DATABASE_NAME
-    condition = "job_id = {}".format(job_id) # what's the column name?
+    database = "occupation"
+    condition = "o_code = {}".format(job_id) # what's the column name?
 
     # create the set field
     setfield = ""
@@ -201,6 +201,17 @@ def update_entry(cursor, job_id, **kwargs):
         )
     cursor.execute(sql)
 # end def
+
+def update_occupation(cursor, o_code, o_name):
+    sql = "UPDATE occupation SET o_name = '{}' WHERE o_code = {}".format(
+        o_name, o_code
+        )
+    cursor.execute(sql)
+def update_salary(cursor, h_mean, a_mean, a_median, o_code, l_code):
+    sql = "UPDATE salary SET h_mean = {}, a_mean = {}, a_median = {} WHERE o_code = {} AND l_code = {}".format(
+        h_mean, a_mean, a_median, o_code, l_code
+        )
+    cursor.execute(sql)
 
 #add this little function to the definition
 def search():
@@ -298,7 +309,9 @@ def menu():
     print("        io: insert new occupation into database")
     print("        d : delete occupation by ID")
     print("        ds: delete salary by ID and loc") 
-    print("        u : update")
+##    print("        u : update")
+    print("        us: update salary row")
+    print("        uo: update occuptation row")
     print("        s : select")
     print("        ss: search for a job by major or location")
     print("        o : get occupation code matching job title")
@@ -358,6 +371,29 @@ def main():
             print("Enter the location code")
             inp4=input()
             insert_salary(cursor, inp, inp1, inp2, inp3, inp4)
+            cnx.commit()
+        
+        elif opt=='uo':
+            print("Enter the o_code")
+            inp=input()
+            print("Enter the new o_name")
+            inp1=input()
+            update_occupation(cursor, inp, inp1)
+            cnx.commit()
+        
+        elif opt=='us':
+            #h_mean, a_mean, a_median, o_code, l_code
+            inp2=input()
+            print("Enter the occupation code")
+            inp3=input()
+            print("Enter the location code")
+            inp4=input()
+            print("Enter the new hourly mean")
+            inp=input()
+            print("Enter the new annual mean")
+            inp1=input()
+            print("Enter the new annual median")
+            update_salary(cursor, inp, inp1, inp2, inp3, inp4)
             cnx.commit()
         
         elif opt=='i':
