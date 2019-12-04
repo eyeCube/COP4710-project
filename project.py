@@ -4,12 +4,16 @@
     Jacob Wharton, Andre Guiraud, Samuel Silva
     Due: 6 December 2019
 
+
+what is h_mean, a_mean, a_median?
+what should the input function REPL look like?
+Can we connect o_code to major?
+
     more fxns:
-    get location code for a given location name
     
     
     advanced fxn:
-    location radius of search major -> info about jobs relating to major
+    location and major -> info about jobs relating to major in your area
 '''
 
 # mysql connector:
@@ -26,22 +30,6 @@ DATABASE_NAME = "jobs"
 JOB_ID = "o_code"
 JOB_NAME = "o_name"
 #
-
-
-def get_location_code(cursor, lname)
-    sql = "SELECT l_code FROM location WHERE l_name = '{}'".format(lname)
-    cursor.execute(sql)
-    return cursor.fetchone()[0]
-
-def get_location_codes(cursor):
-    sql = "SELECT DISTINCT l_code FROM location"
-    cursor.execute(sql)
-    return cursor.fetchall()
-
-def get_occupation_codes(cursor):
-    sql = "SELECT DISTINCT o_code FROM jobs"
-    cursor.execute(sql)
-    return cursor.fetchall()
 
 
 # get connection, cursor objects
@@ -81,6 +69,39 @@ def choose_query_from_input(inp: str):
         return select(inp)
 
 
+# advanced
+def convert_location(loc):
+    # translate "Miami, FL" into
+    # "Miami-Fort Lauderdale-West Palm Beach, FL"
+    data = loc.split(", ")
+    sql = "SELECT l_name FROM location WHERE l_name LIKE '%{}%, {}'".format(
+        data[0], data[1])
+    cursor.execute(sql)
+    return cursor.fetchone()[0] #return only the first item in the row
+
+def get_rows_from_major_location(cursor, major, area_code):
+    sql = "SELECT * FROM jobs WHERE major = '{}' AND l_code = '{}'".format(
+        major,area_code
+        )
+    cursor.execute(sql)
+    return cursor.fetchall()
+#
+
+def get_location_code(cursor, lname)
+    sql = "SELECT l_code FROM location WHERE l_name = '{}'".format(lname)
+    cursor.execute(sql)
+    return cursor.fetchone()[0] #return only the first item in the row
+
+def get_location_codes(cursor):
+    sql = "SELECT DISTINCT l_code FROM location"
+    cursor.execute(sql)
+    return cursor.fetchall()
+
+def get_occupation_codes(cursor):
+    sql = "SELECT DISTINCT o_code FROM jobs"
+    cursor.execute(sql)
+    return cursor.fetchall()
+
 def insert_args(cursor, *args):
     '''        
         add a record to the database, using standard arguments
@@ -98,7 +119,8 @@ def insert_args(cursor, *args):
         db=DATABASE_NAME, v=valuestrs
         )
     cursor.execute(statement, tuple(_values))
-        
+# end def
+
 def insert_kwargs(cursor, **kwargs):
     '''
         add a record to the database, using keyword arguments
@@ -206,8 +228,6 @@ def main():
         opt=input()
         
         if opt=='i':
-            printColumns()
-            
             # get location
             while(True):
                 print("Enter a valid location e.g. 'Tallahassee, FL':")
@@ -226,6 +246,8 @@ def main():
             while(True):
                 print("Enter a valid occupation code e.g. '11-1011':")
                 o_code=input()
+                
+                # is this how this should be??
                 print(o_code)
                 if item in get_occupation_codes():
                     ocode = item[0] # each row is a tuple
@@ -233,7 +255,7 @@ def main():
                         break
                 print("Invalid response. Try again.")
             # end while
-
+            
             print("Enter the occupation title:")
             o_title = input()
             print("Enter the occupation h_mean:")
@@ -247,6 +269,7 @@ def main():
                 area_code, area_name, o_code, o_title, h_mean, a_mean, a_median,
                 )
             )
+            cnx.commit()
         # end if
             
         elif opt=='d':
