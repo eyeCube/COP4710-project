@@ -16,8 +16,8 @@ import sys
 # constants
 DATABASE_NAME = "jobs"
     # database column names
-JOB_ID = "OCC_CODE"
-JOB_NAME = "OCC_TITLE"
+JOB_ID = "o_code"
+JOB_NAME = "o_name"
 #
 
 
@@ -106,7 +106,7 @@ def insert_kwargs(cursor, **kwargs):
 
 def delete_where(cursor, condition):
     sql = "DELETE FROM {db} WHERE {con}".format(
-        db=DATABASE_NAME, con=condition )
+        db="occupation", con=condition )
     cursor.execute(sql)
 def delete(cursor, itemID): # delete by ID
     print("delete")
@@ -114,8 +114,13 @@ def delete(cursor, itemID): # delete by ID
 def delete_by_name(cursor, name):
     delete_where(cursor, "{} = '{}'".format(JOB_NAME, name))
 
-def search_by_name():
-    pass
+def select(cursor, condition):
+    sql = "SELECT FROM {db} WHERE {con}".format(
+        db="occupation", con=condition )
+    cursor.execute(sql)
+    return cursor.fetchall()
+def select_by_name(cursor, name):
+    return select(cursor, "{} = '{}'".format(JOB_NAME, name))
 
 def update_entry(cursor, job_id, **kwargs):
     print("update")
@@ -149,6 +154,7 @@ def menu():
     print("        d : delete item by ID")
     print("        D : delete item satisfying condition")
     print("        u : update")
+    print("        s : select")
     print("        q : quit")
 
 def printColumns():
@@ -215,6 +221,12 @@ def main():
             arglist = argstr.split(", ")
             update(cursor, item, arglist)
             cnx.commit()
+            
+        elif opt=='s':
+            print("Enter the name of the occupation to search for:")
+            inp=input()
+            results = select_by_name(cursor, inp)
+            print(results)
             
         elif opt=='q':
             programIsRunning=False
