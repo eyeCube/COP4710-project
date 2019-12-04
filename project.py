@@ -9,6 +9,7 @@
     
     advanced fxn:
     location and major -> info about jobs relating to major in your area
+    get average hourly wage for all jobs of a given major in your area
 '''
 
 # mysql connector:
@@ -64,38 +65,32 @@ def choose_query_from_input(inp: str):
         return select(inp)
 
 
-# advanced
-def convert_location(loc):
-    # translate "Miami, FL" into
-    # "Miami-Fort Lauderdale-West Palm Beach, FL"
-    data = loc.split(", ")
-    sql = "SELECT l_name FROM location WHERE l_name LIKE '%{}%, {}'".format(
-        data[0], data[1])
-    cursor.execute(sql)
-    return cursor.fetchone()[0] #return only the first item in the row
 
-def get_rows_from_major_location(cursor, major, area_code):
-    # should it be this way? We need to use JOINS
-    '''SELECT * FROM jobs JOIN location ON location.l_code=jobs.area
-    WHERE major = '{}' AND l_code = '{}'
-    '''
-    sql = "SELECT * FROM jobs WHERE major = '{}' AND l_code = '{}'".format(
-        major,area_code
-        )
-    cursor.execute(sql)
-    return cursor.fetchall()
-#
 
 def get_location_code(cursor, lname): #updated: test again
     sql = "SELECT l_code FROM location WHERE l_name = '{}'".format(
         convert_location(lname) )
     cursor.execute(sql)
-    return cursor.fetchone()[0] #return only the first item in the row
+    results = cursor.fetchone()
+    if len(results):
+        return results[0] #return only the first item in the row
+    else:
+        return None
 
 def get_location_codes(cursor):
     sql = "SELECT DISTINCT l_code FROM location"
     cursor.execute(sql)
     return cursor.fetchall()
+
+def get_occupation_code(cursor, o_name): # TEST
+    sql = "SELECT DISTINCT o_code FROM majors WHERE m_name LIKE '%{}%'".format(
+        o_name )
+    cursor.execute(sql)
+    results = cursor.fetchone()
+    if len(results):
+        return results[0] #return only the first item in the row
+    else:
+        return None
 
 def get_occupation_codes(cursor):
     sql = "SELECT DISTINCT o_code FROM jobs"
@@ -209,7 +204,7 @@ def search():
     option=input()
     if option == 'm':
         print("Enter your major's name")
-        m = input()
+        m = input() # ** shouldn't these be h_mean, a_mean, a_median?
         query = ("SELECT m_name, l_name, mean_wage, annual_wage, median_wage FROM expected_salary, major, location"
                          "WHERE m_name == %s")
 
@@ -218,7 +213,7 @@ def search():
 
     elif option == 'a':
         print("Enter your state's name")
-        a = input()
+        a = input() # ** shouldn't these be h_mean, a_mean, a_median?
         query = ("SELECT m_name, l_name, mean_wage, annual_wage, median_wage FROM expected_salary, major, location"
                          "WHERE l_name == %s")
 
@@ -228,7 +223,7 @@ def search():
         print("Enter your major's name")
         m = input()
         print("Enter your area's name")
-        a = input()
+        a = input() # ** shouldn't these be h_mean, a_mean, a_median?
         query = ("SELECT m_name, l_name, mean_wage, annual_wage, median_wage FROM expected_salary, major, location"
                          "WHERE m_name == %s AND l_name == %s")
 
@@ -239,6 +234,48 @@ def search():
         print("Invalid option")
         return search()
 #end def search
+
+
+
+# advanced
+def convert_location(cursor, loc):
+    # translate "Miami, FL" into
+    # "Miami-Fort Lauderdale-West Palm Beach, FL"
+    data = loc.split(", ")
+    sql = "SELECT l_name FROM location WHERE l_name LIKE '%{}%, {}'".format(
+        data[0], data[1])
+    cursor.execute(sql)
+    results = cursor.fetchone()
+    if (len(results)):
+        return results[0] #return only the first item in the row
+    else:
+        return None
+#get average hourly wage for all jobs of a given major in a given area
+def get_hourly_avg(cursor, majorName, locName):
+    o_code = get_occupation_code(cursor, majorName)[:2] # only care about first two digits in the code
+    l_name = convert_location(cursor, locName) # get a valid location
+    if o_code == None:
+        return None
+    if l_name == None:
+        return None
+    sql = '''SELECT AVG(h_mean) FROM jobs, location
+    WHERE jobs.o_code LIKE '{}%' AND location.l_name = '{}'
+    '''.format(o_code, l_name)
+    cursor.execute(sql)
+    return cursor.fetchall()
+# redundant ?
+def get_rows_from_major_location(cursor, major, area_code):
+    # should it be this way? We need to use JOINS
+    '''SELECT * FROM jobs JOIN location ON location.l_code=jobs.area
+    WHERE major = '{}' AND l_code = '{}'
+    '''
+    sql = "SELECT * FROM jobs WHERE major = '{}' AND l_code = '{}'".format(
+        major,area_code
+        )
+    cursor.execute(sql)
+    return cursor.fetchall()
+# end advanced
+
 
 
 def menu():
@@ -292,10 +329,12 @@ def main():
                 loc=input()
                 area_code = get_location_code(cursor, loc)
                 print(area_code)
-                for item in get_location_codes(cursor):
-                    acode = item[0] # each row is a tuple
-                    if acode==area_code:
-                        break
+                if area_code != None:
+##                    for item in get_location_codes(cursor):
+##                        acode = item[0] # each row is a tuple
+##                        if acode==area_code:
+##                            break
+                    break
                 print("Invalid response. Try again.")
             # end while
 
@@ -307,10 +346,12 @@ def main():
                 
                 # is this how this should be??
                 print(o_code)
-                for item in get_occupation_codes():
-                    ocode = item[0] # each row is a tuple
-                    if ocode[:2]==o_code[:2]: # only care about first two numbers.
-                        break
+                if o_code != None:
+##                    for item in get_occupation_codes():
+##                        ocode = item[0] # each row is a tuple
+##                        if ocode[:2]==o_code[:2]: # only care about first two numbers.
+##                            break
+                    break
                 print("Invalid response. Try again.")
             # end while
             
@@ -347,7 +388,8 @@ def main():
 	    inp=input()
 	    print("Enter the l_code of the salary to delete:")
 	    inp1=input()
-	    delete_salary(cursor, "o_code = '{}' AND l_code = '{}'".format(inp, inp1))
+	    delete_salary(cursor, "o_code = '{}' AND l_code = '{}'".format(
+                inp, inp1) )
             
         elif opt=='D':
             print("Enter the condition on which to delete:")
