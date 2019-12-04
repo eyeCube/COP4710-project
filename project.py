@@ -429,7 +429,7 @@ def main():
             inp1=input()
             delete_salary(cursor, "o_code = '{}' AND l_code = '{}'".format(
                 inp, inp1) )
-            cnx.commit()
+            cnx.commit() #
             
         elif opt=='D':
             print("Enter the condition on which to delete:")
