@@ -383,7 +383,6 @@ def main():
         
         elif opt=='us':
             #h_mean, a_mean, a_median, o_code, l_code
-            inp2=input()
             print("Enter the occupation code")
             inp3=input()
             print("Enter the location code")
@@ -393,6 +392,7 @@ def main():
             print("Enter the new annual mean")
             inp1=input()
             print("Enter the new annual median")
+            inp2=input()
             update_salary(cursor, inp, inp1, inp2, inp3, inp4)
             cnx.commit()
         
