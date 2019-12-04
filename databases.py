@@ -3,6 +3,14 @@
     Databases project
     Jacob Wharton, Andre Guiraud, Samuel Silva
     Due: 6 December 2019
+what is h_mean, a_mean, a_median?
+what should the input function REPL look like?
+Can we connect o_code to major?
+    more fxns:
+    
+    
+    advanced fxn:
+    location and major -> info about jobs relating to major in your area
 '''
 
 # mysql connector:
@@ -19,6 +27,7 @@ DATABASE_NAME = "jobs"
 JOB_ID = "o_code"
 JOB_NAME = "o_name"
 #
+
 
 # get connection, cursor objects
 def establish_connection(host, user, pw, database=None):
@@ -57,6 +66,40 @@ def choose_query_from_input(inp: str):
         return select(inp)
 
 
+# advanced
+def convert_location(loc):
+    # translate "Miami, FL" into
+    # "Miami-Fort Lauderdale-West Palm Beach, FL"
+    data = loc.split(", ")
+    sql = "SELECT l_name FROM location WHERE l_name LIKE '%{}%, {}'".format(
+        data[0], data[1])
+    cursor.execute(sql)
+    return cursor.fetchone()[0] #return only the first item in the row
+
+def get_rows_from_major_location(cursor, major, area_code):
+    sql = "SELECT * FROM jobs WHERE major = '{}' AND l_code = '{}'".format(
+        major,area_code
+        )
+    cursor.execute(sql)
+    return cursor.fetchall()
+#
+
+def get_location_code(cursor, lname):
+    sql = "SELECT l_code FROM location WHERE l_name = '{}'".format(lname)
+    cursor.execute(sql)
+    return cursor.fetchone()[0] #return only the first item in the row
+
+def get_location_codes(cursor):
+    sql = "SELECT DISTINCT l_code FROM location"
+    cursor.execute(sql)
+    return cursor.fetchall()
+
+def get_occupation_codes(cursor):
+    sql = "SELECT DISTINCT o_code FROM jobs"
+    cursor.execute(sql)
+    return cursor.fetchall()
+
+
 def insert_args(cursor, *args):
     '''        
         add a record to the database, using standard arguments
@@ -74,8 +117,8 @@ def insert_args(cursor, *args):
         db=DATABASE_NAME, v=valuestrs
         )
     cursor.execute(statement, tuple(_values))
-    return cursor.fetchall() # fetch all rows from the query result
-        
+# end def
+
 def insert_kwargs(cursor, **kwargs):
     '''
         add a record to the database, using keyword arguments
@@ -98,14 +141,12 @@ def insert_kwargs(cursor, **kwargs):
         db=DATABASE_NAME, p=params, v=valuestrs
         )
     cursor.execute(statement, tuple(_values))
-    return cursor.fetchall() # fetch all rows from the query result
 # end def
 
 def delete_where(cursor, condition):
     sql = "DELETE FROM {db} WHERE {con}".format(db="salary", con=condition)
     cursor.execute(sql)
-    sql = "DELETE FROM {db} WHERE {con}".format(
-        db="occupation", con=condition )
+    sql = "DELETE FROM {db} WHERE {con}".format(db="occupation", con=condition)
     cursor.execute(sql)
 def delete(cursor, itemID): # delete by ID
     print("delete")
@@ -113,8 +154,16 @@ def delete(cursor, itemID): # delete by ID
 def delete_by_name(cursor, name):
     delete_where(cursor, "{} = '{}'".format(JOB_NAME, name))
 
-def search_by_name():
-    pass
+def select(cursor, condition, what):
+    sql = "SELECT {w} FROM {db} WHERE {con}".format(w=what,
+        db="occupation", con=condition )
+    cursor.execute(sql)
+    return cursor.fetchall()
+def select_by_name(cursor, name):
+##    "{} = '{}'"
+    return select(cursor, "{} LIKE '%{}%'".format(JOB_NAME, name), "o_name")
+def select_o_code(cursor, name):
+    return select(cursor, "o_name = '{}'".format(name), "o_code")
 
 def update_entry(cursor, job_id, **kwargs):
     print("update")
@@ -137,7 +186,6 @@ def update_entry(cursor, job_id, **kwargs):
         db=database, kw=setfield, con=condition
         )
     cursor.execute(sql)
-    return cursor.fetchall()
 # end def
 
 
@@ -146,12 +194,17 @@ def menu():
     print("    Commands:")
     print("        i : insert new item into database")
     print("        d : delete item by ID")
-    print("        D : delete item satisfying condition")
     print("        u : update")
+    print("        s : select")
+    print("        o : get occupation code matching job title")
+    print("        I : insert new item into database (each column)")
+    print("        D : delete item satisfying condition")
+    print("        S : select item satisfying condition")
     print("        q : quit")
 
 def printColumns():
-    print('''
+    # TODO: change these to the appropriate names
+    print(''' 
 Columns:
     AREA        : string
     AREA_NAME   : string
@@ -164,7 +217,7 @@ Columns:
 
 def main():
     print(len(sys.argv))
-    # assert(len(sys.argv) >= 3)
+    assert(len(sys.argv) >= 3)
 
     host = sys.argv[1]
     user = sys.argv[2]
@@ -178,23 +231,58 @@ def main():
         opt=input()
         
         if opt=='i':
-            printColumns()
-            print("Enter the data for the new row, delimited by ', ':")
+            # get location
+            while(True):
+                print("Enter a valid location e.g. 'Tallahassee, FL':")
+                loc=input()
+                area_code = get_location_code(cursor, loc)
+                print(area_code)
+                for item in get_location_codes(cursor):
+                    acode = item[0] # each row is a tuple
+                    if acode==area_code:
+                        break
+                print("Invalid response. Try again.")
+            # end while
+
+            # get occupation code
+            # how to handle this? How do we want insert to work?
+            while(True):
+                print("Enter a valid occupation code e.g. '11-1011':")
+                o_code=input()
+                
+                # is this how this should be??
+                print(o_code)
+                if item in get_occupation_codes():
+                    ocode = item[0] # each row is a tuple
+                    if ocode==o_code:
+                        break
+                print("Invalid response. Try again.")
+            # end while
+            
+            print("Enter the occupation title:")
+            o_title = input()
+            print("Enter the occupation h_mean:")
+            h_mean = input()
+            print("Enter the occupation a_mean:")
+            a_mean = input()
+            print("Enter the occupation a_median:")
+            a_median = input()
+            
+            insert_args(cursor, (a_code, o_code, o_title, h_mean, a_mean, a_median,
+                )
+            )
+            cnx.commit()
+        # end if
+            
+        elif opt=='I':
+            print("Enter the new row data, delimited by ', ':")
             inp=input()
             inps = inp.split(", ")
-            kwargs = False
-            for _in in inps:
-                if inp.find("=") != -1:
-                    kwargs = True
-                    break
-            if kwargs:
-                insert_kwargs(cursor, inps)
-            else:
-                insert_args(cursor, inps)
+            insert_args(cursor, inps)
             cnx.commit()
             
         elif opt=='d':
-            print("Enter the OCC_CODE of the item to delete:")
+            print("Enter the o_code of the item to delete:")
             inp=input()
             delete(cursor, inp)
             cnx.commit()
@@ -205,15 +293,33 @@ def main():
             delete_where(cursor, inp)
             cnx.commit()
             
-        elif opt=='u':
-            print("Enter the ID of the item to update:")
+        elif opt=='u': # TODO: update update fxn
+            print("Enter the o_code of the item to update:")
             item=input()
             printColumns()
             print("Enter the new data for the row, delimited by ', ':")
             argstr=input()
             arglist = argstr.split(", ")
-            update(cursor, item, arglist)
+            update_entry(cursor, item, arglist)
             cnx.commit()
+            
+        elif opt=='s':
+            print("Enter the name of the occupation to search for:")
+            inp=input()
+            results = select_by_name(cursor, inp)
+            print(results)
+            
+	elif opt=='o':
+           print("Enter the name of occupation:")
+           inp=input()
+           results = select_o_code(cursor, inp)
+           print(results)
+
+        elif opt=='S':
+            print("Enter the condition on which to search:")
+            inp=input()
+            results = select(cursor, inp)
+            print(results)
             
         elif opt=='q':
             programIsRunning=False
