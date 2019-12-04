@@ -112,10 +112,22 @@ def insert_args(cursor, *args):
     valuestrs=valuestrs[:-2] # remove last ", "
         
     statement = "INSERT INTO {db} VALUES ({v})".format(
-        db=DATABASE_NAME, v=valuestrs
+        db="occupation", v=valuestrs
         )
     cursor.execute(statement, tuple(_values))
 # end def
+
+def insert_occupation(cursor, o_code, o_name):
+    sql = "INSERT INTO occupation (o_code, o_name) VALUES ('{o_code}', '{o_name}')".format(
+        o_code, o_name
+        )
+    cursor.executs(sql)
+def insert_salary(cursor, h_mean, a_mean, a_median, o_code, l_code):
+    sql = '''INSERT INTO occupation (h_mean, a_mean, a_median, o_code, l_code)
+VALUES ({h_mean}, {a_mean}, {a_median}, '{o_code}', {l_code}'''.format(
+        h_mean, a_mean, a_median, o_code, l_code
+        )
+    cursor.executs(sql)
 
 def insert_kwargs(cursor, **kwargs):
     '''
@@ -282,7 +294,9 @@ def menu():
     print("Enter a command to begin.")
     print("~~~~~~~~~~~~~~~~~~~~")
     print("    Commands:")
-    print("        i : insert new item into database")
+##    print("        i : insert new item into database")
+    print("        is: insert new salary into database")
+    print("        io: insert new occupation into database")
     print("        d : delete occupation by ID")
     print("        ds: delete salary by ID and loc") 
     print("        u : update")
@@ -324,7 +338,30 @@ def main():
         menu()
         opt=input()
         
-        if opt=='i':
+        if opt=='io':
+            print("Enter the o_code")
+            inp=input()
+            print("Enter the o_name")
+            inp1=input()
+            insert_occupation(cursor, inp, inp1)
+            cnx.commit()
+        
+        if opt=='is':
+            #h_mean, a_mean, a_median, o_code, l_code
+            print("Enter the hourly mean")
+            inp=input()
+            print("Enter the annual mean")
+            inp1=input()
+            print("Enter the annual median")
+            inp2=input()
+            print("Enter the occupatioon code")
+            inp3=input()
+            print("Enter the location code")
+            inp4=input()
+            insert_salary(cursor, inp, inp1, inp2, inp3, inp4)
+            cnx.commit()
+        
+        elif opt=='i':
             # get location
             while(True):
                 print("Enter a valid location e.g. 'Tallahassee, FL':")
